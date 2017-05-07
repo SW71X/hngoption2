@@ -1,10 +1,281 @@
 # Python implementation by Dustin Zacharias (2017), method based on Fabrice Rouah
 
+
+
+
+################################
+# Nelder Mead minimization
+
+
+# The function calculates the mean value of a set of n vectors each of dimension n
+# Namely, a (n x n) matrix
+
+def VMean(X, n):
+    meanX = [0.0] * n
+    for i in range(0, n):
+        meanX[i] = 0.0
+        for j in range(0, n):
+            meanX[i] += X[i][j]
+        meanX[i] = meanX[i] / n
+    return meanX
+
+
+def VAdd(x, y):
+    n = len(x)
+    z = [0.0] * n
+    for i in range(0, n):
+        z[i] = x[i] + y[i]
+    return z
+
+
+def VSub(x, y):
+    n = len(x)
+    z = [0.0] * n
+    for i in range(0, n):
+        z[i] = x[i] - y[i]
+    return z
+
+
+def VMult(x, a):
+    n = len(x)
+    z = [0.0] * n
+    for i in range(0, n):
+        z[i] = a * x[i]
+    return z
+
+
+# Nelder Mead Algorithm
+def NelderMeadStep0(f, N, NumIters, x, r):
+    # Value of the function at the vertices
+    F = [[0 for i in range(2)] for i in range(N + 1)]
+
+    # Step 0.  Ordering and Best and Worst points
+    # Order according to the functional values, compute the best and worst points
+    NumIters += 1
+    for j in range(N + 1):
+        z = [0] * N
+        for i in range(N):
+            z[i] = x[i][j]
+        F[j][0] = f(z, r)
+        F[j][1] = j
+    F.sort()
+    # New vertices order first N best initial vectors and
+    # last (N+1)st vertice is the worst vector
+    # y is the matrix of vertices, ordered so that the worst vertice is last
+
+    y = [[0 for i in range(N + 1)] for j in range(N)]
+    for j in range(N + 1):
+        for i in range(N):
+            y[i][j] = x[i][F[j][1]]
+
+    # First best vector y(1) and function value f1
+    x1 = [y[i][0] for i in range(N)]
+    f1 = f(x1, r)
+
+    # Last best vector y(N) and function value fn
+    xn = [y[i][N - 1] for i in range(N)]
+    fn = f(xn, r)
+
+    # Worst vector y(N+1) and function value fn1
+    xn1 = [y[i][N] for i in range(N)]
+    fn1 = f(xn1, r)
+
+    # z is the first N vectors from y, excludes the worst y(N+1)
+    z = [[0 for i in range(N)] for j in range(N)]
+    for j in range(N):
+        for i in range(N):
+            z[i][j] = y[i][j]
+
+    # Mean of best N values and function value fm
+    xm = VMean(z, N)
+    fm = f(xm, r)
+
+    # Reflection point xr and function fr
+    xr = VSub(VAdd(xm, xm), xn1)
+    fr = f(xr, r)
+
+    # Expansion point xe and function fe
+    xe = VSub(VAdd(xr, xr), xm)
+    fe = f(xe, r)
+
+    # Outside contraction point and function foc
+    xoc = VAdd(VMult(xr, 0.5), VMult(xm, 0.5))
+    foc = f(xoc, r)
+
+    # Inside contraction point and function foc
+    xic = VAdd(VMult(xm, 0.5), VMult(xn1, 0.5))
+    fic = f(xic, r)
+
+    # Necessary parameters for steps 1-5
+    return NumIters, y, x1, f1, fn, fn1, xr, fr, xe, fe, xoc, foc, xic, fic
+
+
+def NelderMead(f, N, NumIters, MaxIters, Tolerance, x, r):
+    # Step0
+    NumIters, y, x1, f1, fn, fn1, xr, fr, xe, fe, xoc, foc, xic, fic = NelderMeadStep0(f, N, NumIters, x, r)
+
+    while ((NumIters <= MaxIters) and (abs(f1 - fn1) >= Tolerance)):
+        # Step1. Reflection Rule
+        if ((f1 <= fr) and (fr < fn)):
+            for j in range(N):
+                for i in range(N):
+                    x[i][j] = y[i][j]
+            for i in range(N):
+                x[i][N] = xr[i]
+
+            # go to step 0
+            NumIters, y, x1, f1, fn, fn1, xr, fr, xe, fe, xoc, foc, xic, fic = NelderMeadStep0(f, N, NumIters, x, r)
+            continue
+
+        # Step2. Expansion Rule
+        if fr < f1:
+            for j in range(N):
+                for i in range(N):
+                    x[i][j] = y[i][j]
+            if fe < fr:
+                for i in range(N):
+                    x[i][N] = xe[i]
+            else:
+                for i in range(N):
+                    x[i][N] = xr[i]
+            # goto step0
+            NumIters, y, x1, f1, fn, fn1, xr, fr, xe, fe, xoc, foc, xic, fic = NelderMeadStep0(f, N, NumIters, x, r)
+            continue
+        # Step3.	Outside contraction Rule
+        if ((fn <= fr) and (fr < fn1) and (foc <= fr)):
+            for j in range(N):
+                for i in range(N):
+                    x[i][j] = y[i][j]
+            for i in range(N):
+                x[i][N] = xoc[i]
+            # goto step 0
+            NumIters, y, x1, f1, fn, fn1, xr, fr, xe, fe, xoc, foc, xic, fic = NelderMeadStep0(f, N, NumIters, x, r)
+            continue
+
+        # Step4. Inside contraction Rule
+        if ((fr >= fn1) and (fic < fn1)):
+            for j in range(N):
+                for i in range(N):
+                    x[i][j] = y[i][j]
+            for i in range(N):
+                x[i][N] = xic[i]
+            # !!! goto step0
+            NumIters, y, x1, f1, fn, fn1, xr, fr, xe, fe, xoc, foc, xic, fic = NelderMeadStep0(f, N, NumIters, x, r)
+            continue
+
+        # Step 5. Shrink Step
+        for i in range(N):
+            x[i][0] = y[i][0]
+        for i in range(N):
+            for j in range(N + 1):
+                x[i][j] = 0.5 * (y[i][j] + x[i][0])
+
+        # goto step0
+        NumIters, y, x1, f1, fn, fn1, xr, fr, xe, fe, xoc, foc, xic, fic = NelderMeadStep0(f, N, NumIters, x, r)
+        continue
+
+    # Output component
+    # Return N parameter values, value of objective function, and number of iterations
+    out = [x1[i] for i in range(N)]
+    out.append(f1)
+    out.append(NumIters)
+    return out
+
+
+
+
+
+# End of Nelder Mead minimization
+################################
+
+
+
+
+
+
+####################
 # Log Likelihood Estimation
 
-from LogLikelihood import LogLike
-from NMFiles import NelderMead
 
+#from LogLikelihood import LogLike
+#from NMFiles import NelderMead
+
+
+# Log Likelihood function for Heston and Nandi Model
+from math import log, sqrt
+
+
+# Returns the sum of a vector's elements
+def VecSum(x):
+    n = len(x)
+    Sum = 0.0
+    for i in range(0, n):
+        Sum += x[i]
+    return Sum
+
+
+# Returns the sample variance
+def VecVar(x):
+    n = len(x)
+    mean = VecSum(x) / n
+    sumV = 0.0
+    for i in range(0, n):
+        sumV += (x[i] - mean) ** 2
+    return sumV / (n - 1)
+
+
+# Returns the log-likelihood based on timeseries
+def LogLike(B, r):
+    # pass a timeseries named prices with newest vals on top
+
+    # i  = 0
+    # with open('SP500.txt', 'r') as inPrices:
+    #	for line in inPrices:
+    #		try:
+    #			Price.append(float(line))
+    #			i += 1
+    #		except:
+    #			continue
+    
+    
+
+    N = len(prices)
+    # Calculate S&P500 returns
+    ret = [0.0] * (N - 1)
+    for i in range(0, N - 1):
+        ret[i] = (log(prices.ix[i] / prices.ix[i + 1]))
+
+    Variance = VecVar(ret)
+    h = [0 * i for i in range(N - 1)]
+    Z = [0 * i for i in range(N - 1)]
+    L = [0 * i for i in range(N - 1)]
+
+    # Construct GARCH(1,1) process by working back in time
+    h[N - 2] = Variance
+    Z[N - 2] = (ret[N - 2] - r - B[4] * h[N - 2]) / h[N - 2] ** 0.5
+    L[N - 2] = -log(h[N - 2]) - (ret[N - 2] ** 2) / h[N - 2]
+
+    for i in range(N - 3, -1, -1):
+        h[i] = B[0] + B[2] * h[i + 1] + B[1] * pow(Z[i + 1] - B[3] * sqrt(h[i + 1]), 2)
+        Z[i] = (ret[i] - r - B[4] * h[i]) / (h[i] ** 0.5)
+        L[i] = -log(h[i]) - (ret[i] ** 2) / h[i]
+
+    LogL = VecSum(L)
+    if ((B[0] < 0) | (B[1] < 0) | (B[2] < 0) | (B[3] < 0) | (B[4] < 0)):  # (B[2]+B[1]*pow(B[3],2)>=1))
+        return 1e50
+    else:
+        return -LogL  # Minimize -Log-Like(Beta)
+
+#End of loglike
+##########
+
+
+
+
+
+
+####################################
+#Heston Nandi Parameter Estimation
 
 def main():
     # Settings for Nelder Mead Algorithm
@@ -12,7 +283,7 @@ def main():
     MaxIters = 1e3  # Maximum number of iterations
     Tolerance = 1e-5  # Tolerance on best and worst function values
     N = 5  # Number of Heston and Nandi parameters
-    r = 0.05 / 252.0  # Risk Free Rate
+    r = 0.01 / 252.0  # Risk Free Rate
 
     # Heston and Nandi parameter starting values (vertices) in vector form
 
@@ -72,77 +343,12 @@ if __name__ == '__main__':
 
 
 
+#Heston Nandi Parameter Estimation
+####################################
 
 
-# Python implementation by Dustin Zacharias (2017), method based on Fabrice Rouah (volopta.com)
-
-
-# Log Likelihood function for Heston and Nandi Model
-from math import log, sqrt
-
-
-# Returns the sum of a vector's elements
-def VecSum(x):
-    n = len(x)
-    Sum = 0.0
-    for i in range(0, n):
-        Sum += x[i]
-    return Sum
-
-
-# Returns the sample variance
-def VecVar(x):
-    n = len(x)
-    mean = VecSum(x) / n
-    sumV = 0.0
-    for i in range(0, n):
-        sumV += (x[i] - mean) ** 2
-    return sumV / (n - 1)
-
-
-# Returns the log-likelihood based on timeseries
-def LogLike(B, r):
-    # pass a timeseries named prices with newest vals on top
-
-    # i  = 0
-    # with open('SP500.txt', 'r') as inPrices:
-    #	for line in inPrices:
-    #		try:
-    #			Price.append(float(line))
-    #			i += 1
-    #		except:
-    #			continue
-
-    N = len(prices)
-    # Calculate S&P500 returns
-    ret = [0.0] * (N - 1)
-    for i in range(0, N - 1):
-        ret[i] = (log(prices.ix[i] / prices.ix[i + 1]))
-
-    Variance = VecVar(ret)
-    h = [0 * i for i in range(N - 1)]
-    Z = [0 * i for i in range(N - 1)]
-    L = [0 * i for i in range(N - 1)]
-
-    # Construct GARCH(1,1) process by working back in time
-    h[N - 2] = Variance
-    Z[N - 2] = (ret[N - 2] - r - B[4] * h[N - 2]) / h[N - 2] ** 0.5
-    L[N - 2] = -log(h[N - 2]) - (ret[N - 2] ** 2) / h[N - 2]
-
-    for i in range(N - 3, -1, -1):
-        h[i] = B[0] + B[2] * h[i + 1] + B[1] * pow(Z[i + 1] - B[3] * sqrt(h[i + 1]), 2)
-        Z[i] = (ret[i] - r - B[4] * h[i]) / (h[i] ** 0.5)
-        L[i] = -log(h[i]) - (ret[i] ** 2) / h[i]
-
-    LogL = VecSum(L)
-    if ((B[0] < 0) | (B[1] < 0) | (B[2] < 0) | (B[3] < 0) | (B[4] < 0)):  # (B[2]+B[1]*pow(B[3],2)>=1))
-        return 1e50
-    else:
-        return -LogL  # Minimize -Log-Like(Beta)
-
-
-
-# Python implementation by Dustin Zacharias (2017), method based on Fabrice Rouah
+####################################
+# HN Pricing (HNFiles)
 
 # HN Integral
 
@@ -232,10 +438,13 @@ def HNC(alpha, beta, gamma, omega, d_lambda, V, S, K, r, T, PutCall):
 
 
 
-# Python implementation by Dustin Zacharias (2017), method based on Fabrice Rouah (volopta.com)
+
+# End HN Pricing (HNFiles)
+####################################
 
 
 
+####################################
 # HN GARCH Price
 
 def HNP(prices,V, S, K, r, T, PutCall,fit):		#PutCall=1 -> Call
@@ -248,3 +457,9 @@ def HNP(prices,V, S, K, r, T, PutCall,fit):		#PutCall=1 -> Call
 
 
     return HNC(output[0],output[1],output[2],output[3],output[4],V, S, K, r, T, PutCall)
+
+
+# End HN GARCH Price
+####################################
+
+
