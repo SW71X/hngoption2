@@ -1,11 +1,11 @@
 Metadata-Version: 1.1
 Name: hngoption
-Version: 0.1
+Version: 0.6.0
 Summary: Heston Nandi GARCH Option Pricing Model (2000)
 Home-page: https://github.com/SW71X/hngoption2
 Author: Dustin L. Zacharias
 Author-email: dustinl.zacharias@gmail.com
 License: MIT
-Download-URL: https://github.com/SW71X/hngoption2/archive/0.1.tar.gz
+Download-URL: https://github.com/SW71X/hngoption2/releases
 Description: UNKNOWN
 Platform: UNKNOWN
