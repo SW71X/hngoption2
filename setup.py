@@ -3,10 +3,10 @@
 from setuptools import setup
 
 setup(name='hngoption',
-      version='0.5',
+      version='0.6.2',
       description='Heston Nandi GARCH Option Pricing Model (2000)',
       url='https://github.com/SW71X/hngoption2',
-      download_url='https://github.com/SW71X/hngoption2/archive/0.5.tar.gz',
+      download_url='https://github.com/SW71X/hngoption2/releases',
       author='Dustin L. Zacharias',
       author_email='dustinl.zacharias@gmail.com',
       license='MIT',
