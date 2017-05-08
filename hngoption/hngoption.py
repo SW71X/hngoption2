@@ -447,9 +447,10 @@ def HNC(alpha, beta, gamma, omega, d_lambda, V, S, K, r, T, PutCall):
 ####################################
 # HN GARCH Price
 
-def HNP(prices,V, S, K, r, T, PutCall,fit):		#PutCall=1 -> Call
+def HNP(price,V, S, K, r, T, PutCall,fit):		#PutCall=1 -> Call
         #prices should be a reverse time series of S with newest values on top
-    global prices = prices
+    global prices
+    prices = price
     if (fit==1):  #Choose if whole loglike thing should run again
 
 
