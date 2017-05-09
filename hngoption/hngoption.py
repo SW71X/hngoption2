@@ -1,11 +1,11 @@
-# Python implementation by Dustin Zacharias (2017), method based on Fabrice Rouah
+# Python implementation by Dustin L. Zacharias (2017), method based on Fabrice Rouah
 
 
+# v0.7
 
 
 ################################
 # Nelder Mead minimization
-
 
 # The function calculates the mean value of a set of n vectors each of dimension n
 # Namely, a (n x n) matrix
@@ -236,14 +236,12 @@ def LogLike(B, r):
     #			i += 1
     #		except:
     #			continue
-    
-    
 
-    N = len(prices)
+    N = len(timeseries)
     # Calculate S&P500 returns
     ret = [0.0] * (N - 1)
     for i in range(0, N - 1):
-        ret[i] = (log(prices.ix[i] / prices.ix[i + 1]))
+        ret[i] = (log(timeseries.ix[i] / timeseries.ix[i + 1]))
 
     Variance = VecVar(ret)
     h = [0 * i for i in range(N - 1)]
@@ -277,8 +275,12 @@ def LogLike(B, r):
 ####################################
 #Heston Nandi Parameter Estimation
 
-def main():
+def params(timeseries_input):
+    """Input dataframe with newest S on top and get alpha,beta,gamma,omega,lambda"""
     # Settings for Nelder Mead Algorithm
+    global timeseries
+    timeseries=timeseries_input
+
     NumIters = 1  # First Iteration
     MaxIters = 1e3  # Maximum number of iterations
     Tolerance = 1e-5  # Tolerance on best and worst function values
@@ -338,8 +340,8 @@ def main():
     return [B[1], B[2], B[3], B[0], B[4]]
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == '__params__':
+    params(timeseries)
 
 
 
@@ -447,18 +449,17 @@ def HNC(alpha, beta, gamma, omega, d_lambda, V, S, K, r, T, PutCall):
 ####################################
 # HN GARCH Price
 
-def HNP(price,V, S, K, r, T, PutCall,fit):		#PutCall=1 -> Call
-        #prices should be a reverse time series of S with newest values on top
-    global prices
-    prices = price
+def HNP(timeseries_input,V, S, K, r, T, PutCall,fit,manparams):		#PutCall=1 -> Call
+    """timeseries_input,V, S, K, r, T, PutCall,fit,manparams"""
+    global parameters
+
     if (fit==1):  #Choose if whole loglike thing should run again
+        parameters = params(timeseries_input)
 
+    if (manparams!=0):
+        parameters=manparams
 
-        global output
-        output = main()
-
-
-    return HNC(output[0],output[1],output[2],output[3],output[4],V, S, K, r, T, PutCall)
+    return HNC(parameters[0],parameters[1],parameters[2],parameters[3],parameters[4],V, S, K, r, T, PutCall)
 
 
 # End HN GARCH Price
