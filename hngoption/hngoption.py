@@ -1,7 +1,7 @@
 # Python implementation by Dustin L. Zacharias (2017), method based on Fabrice Rouah
 
 
-# v0.7
+# v0.8
 
 
 ################################
@@ -256,9 +256,14 @@ def LogLike(B, r):
     for i in range(N - 3, -1, -1):
         h[i] = B[0] + B[2] * h[i + 1] + B[1] * pow(Z[i + 1] - B[3] * sqrt(h[i + 1]), 2)
         Z[i] = (ret[i] - r - B[4] * h[i]) / (h[i] ** 0.5)
-        L[i] = -log(h[i]) - (ret[i] ** 2) / h[i]
+        L[i] = -log(h[i]+ 0.000000000000001) - (ret[i] ** 2) / h[i]
 
     LogL = VecSum(L)
+
+    global h_out
+    h_out=h[0]
+
+
     if ((B[0] < 0) | (B[1] < 0) | (B[2] < 0) | (B[3] < 0) | (B[4] < 0)):  # (B[2]+B[1]*pow(B[3],2)>=1))
         return 1e50
     else:
