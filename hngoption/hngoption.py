@@ -1,5 +1,5 @@
 
-# v1.2
+# v1.4
 
 
 ################################
@@ -178,11 +178,6 @@ def NelderMead(f, N, NumIters, MaxIters, Tolerance, x, r):
     out.append(f1)
     out.append(NumIters)
     return out
-
-
-
-
-
 # End of Nelder Mead minimization
 ################################
 
@@ -222,8 +217,18 @@ def VecVar(x):
     return sumV / (n - 1)
 
 
+#def LogLike(B,r):
+#   logout=LogLikeDeep(B,r)
+
+#   global h_out
+#   h_out=logout[1]
+
+#   return logout[0]
+
+
+h_out = None
 # Returns the log-likelihood based on timeseries
-def LogLike(B, r):
+def LogLikeDeep(B, r):
     # pass a timeseries named prices with newest vals on top
 
     # i  = 0
@@ -246,7 +251,6 @@ def LogLike(B, r):
     Z = [0 * i for i in range(N - 1)]
     L = [0 * i for i in range(N - 1)]
 
-    print('Variance'+str(Variance))
     # Construct GARCH(1,1) process by working back in time
     h[N - 2] = Variance
     Z[N - 2] = (ret[N - 2] - r - B[4] * h[N - 2]) / h[N - 2] ** 0.5
@@ -270,9 +274,6 @@ def LogLike(B, r):
 
 #End of loglike
 ##########
-
-
-
 
 
 
@@ -454,7 +455,7 @@ def HNC(alpha, beta, gamma, omega, d_lambda, V, S, K, r, T, PutCall):
 # HN GARCH Price
 
 def HNP(timeseries_input,V, S, K, r, T, PutCall,fit,manparams):		#PutCall=1 -> Call
-    """v.1.0:  timeseries_input,V, S, K, r, T, PutCall,fit,manparams"""
+    """v.1.3:  timeseries_input,V, S, K, r, T, PutCall,fit,manparams"""
     global parameters
 
     if (fit==1):  #Choose if whole loglike thing should run again
