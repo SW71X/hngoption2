@@ -1,7 +1,5 @@
-# Python implementation by Dustin L. Zacharias (2017), method based on Fabrice Rouah
 
-
-# v0.8
+# v1.0
 
 
 ################################
@@ -248,13 +246,16 @@ def LogLike(B, r):
     Z = [0 * i for i in range(N - 1)]
     L = [0 * i for i in range(N - 1)]
 
+    print('Variance'+str(Variance))
     # Construct GARCH(1,1) process by working back in time
     h[N - 2] = Variance
     Z[N - 2] = (ret[N - 2] - r - B[4] * h[N - 2]) / h[N - 2] ** 0.5
     L[N - 2] = -log(h[N - 2]) - (ret[N - 2] ** 2) / h[N - 2]
 
     for i in range(N - 3, -1, -1):
+        print('rets:' +str(ret[i]))
         h[i] = B[0] + B[2] * h[i + 1] + B[1] * pow(Z[i + 1] - B[3] * sqrt(h[i + 1]), 2)
+        print('print h' + str(h[i]))
         Z[i] = (ret[i] - r - B[4] * h[i]) / (h[i] ** 0.5)
         L[i] = -log(h[i]+ 0.000000000000001) - (ret[i] ** 2) / h[i]
 
@@ -455,7 +456,7 @@ def HNC(alpha, beta, gamma, omega, d_lambda, V, S, K, r, T, PutCall):
 # HN GARCH Price
 
 def HNP(timeseries_input,V, S, K, r, T, PutCall,fit,manparams):		#PutCall=1 -> Call
-    """timeseries_input,V, S, K, r, T, PutCall,fit,manparams"""
+    """v.1.0:  timeseries_input,V, S, K, r, T, PutCall,fit,manparams"""
     global parameters
 
     if (fit==1):  #Choose if whole loglike thing should run again
