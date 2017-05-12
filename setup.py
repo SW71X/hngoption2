@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='hngoption',
-      version='1.5',
+      version='1.6',
       description='Heston Nandi GARCH Option Pricing Model (2000)',
       url='https://github.com/SW71X/hngoption2',
       download_url='https://github.com/SW71X/hngoption2/releases',
