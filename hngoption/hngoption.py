@@ -1,5 +1,5 @@
 
-# v1.0
+# v1.2
 
 
 ################################
@@ -253,16 +253,14 @@ def LogLike(B, r):
     L[N - 2] = -log(h[N - 2]) - (ret[N - 2] ** 2) / h[N - 2]
 
     for i in range(N - 3, -1, -1):
-        print('rets:' +str(ret[i]))
         h[i] = B[0] + B[2] * h[i + 1] + B[1] * pow(Z[i + 1] - B[3] * sqrt(h[i + 1]), 2)
-        print('print h' + str(h[i]))
         Z[i] = (ret[i] - r - B[4] * h[i]) / (h[i] ** 0.5)
         L[i] = -log(h[i]+ 0.000000000000001) - (ret[i] ** 2) / h[i]
 
     LogL = VecSum(L)
 
     global h_out
-    h_out=h[0]
+    h_out = h[0]
 
 
     if ((B[0] < 0) | (B[1] < 0) | (B[2] < 0) | (B[3] < 0) | (B[4] < 0)):  # (B[2]+B[1]*pow(B[3],2)>=1))
