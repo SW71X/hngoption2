@@ -1,5 +1,5 @@
 
-# v1.4
+# v1.5
 
 
 ################################
@@ -225,7 +225,7 @@ def VecVar(x):
 
 #   return logout[0]
 
-
+global h_out
 h_out = None
 # Returns the log-likelihood based on timeseries
 def LogLike(B, r):
@@ -455,7 +455,7 @@ def HNC(alpha, beta, gamma, omega, d_lambda, V, S, K, r, T, PutCall):
 # HN GARCH Price
 
 def HNP(timeseries_input,V, S, K, r, T, PutCall,fit,manparams):		#PutCall=1 -> Call
-    """v.1.4:  timeseries_input,V, S, K, r, T, PutCall,fit,manparams"""
+    """v.1.5:  timeseries_input,V, S, K, r, T, PutCall,fit,manparams"""
     global parameters
 
     if (fit==1):  #Choose if whole loglike thing should run again
